@@ -1,42 +1,42 @@
 pipeline {
     agent any
-    
+
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-id')  // Add this in Jenkins credentials
-        DOCKER_IMAGE = 'yourdockerhubusername/yourapp:latest'
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-id')  // Your Jenkins Docker Hub credentials ID
+        DOCKER_IMAGE = 'monicabalajothi/retail-app:latest'    // Your Docker Hub image name
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/yourusername/yourrepo.git'
+                git branch: 'master', url: 'https://github.com/Monica-balajothi/Devops_IGP.git'
             }
         }
-        
+
         stage('Build') {
             steps {
                 sh 'mvn clean compile'
             }
         }
-        
+
         stage('Test') {
             steps {
                 sh 'mvn test'
             }
         }
-        
+
         stage('Package') {
             steps {
                 sh 'mvn package'
             }
         }
-        
+
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
-        
+
         stage('Docker Login & Push') {
             steps {
                 script {
@@ -46,7 +46,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy with Ansible') {
             steps {
                 sh 'ansible-playbook -i inventory/hosts deploy.yml'
