@@ -1,55 +1,76 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven' // Ensure Maven is configured in Jenkins Global Tool Configuration
+    }
+
     environment {
-        DOCKER_IMAGE = 'monicabalajothi/retail-app:latest' // Your Docker Hub image name
+        MAVEN_OPTS = '-Xmx256m' // Limit Maven memory usage
+        DOCKER_BUILDKIT = '1'  // Use Docker BuildKit for faster builds
     }
 
     stages {
-        stage('Checkout') {
+        stage('Code Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/Monica-balajothi/Devops_IGP.git'
+                git branch: 'main',
+                    url: 'https://github.com/Monica-balajothi/Devops_IGP.git'
             }
         }
 
-        stage('Build') {
+        stage('Code Compile') {
             steps {
-                sh 'mvn clean compile'
+                sh 'mvn clean compile -Dmaven.repo.local=${WORKSPACE}/.m2'
             }
         }
 
-        stage('Test') {
+        stage('Unit Test') {
             steps {
-                sh 'mvn test'
+                sh 'mvn test -Dmaven.repo.local=${WORKSPACE}/.m2'
             }
         }
 
-        stage('Package') {
+        stage('Code Packaging') {
             steps {
-                sh 'mvn package'
+                sh 'mvn package -Dmaven.repo.local=${WORKSPACE}/.m2'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE} ."
+                script {
+                    sh '''
+                    docker build --memory=256m -t monicabalajothi/retail-app:${BUILD_NUMBER} -t monicabalajothi/retail-app:latest .
+                    '''
+                }
             }
         }
 
-        stage('Docker Login & Push') {
+        stage('Push Docker Image') {
             steps {
                 script {
-                    withDockerRegistry([credentialsId: 'dockerhub-id', url: 'https://registry.hub.docker.com']) {
-                        sh "docker push ${DOCKER_IMAGE}"
+                    withDockerRegistry([credentialsId: 'dockerhub-id', url: '']) {
+                        sh '''
+                        docker push monicabalajothi/retail-app:${BUILD_NUMBER}
+                        docker push monicabalajothi/retail-app:latest
+                        '''
                     }
                 }
             }
         }
 
-        stage('Deploy with Ansible') {
+        stage('Deploy as Container') {
             steps {
-                sh 'ansible-playbook -i inventory/hosts deploy.yml'
+                sh '''
+                docker run --memory=256m -itd -p 8081:8080 monicabalajothi/retail-app:latest
+                '''
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs() // Clean up workspace to free up disk space
         }
     }
 }
