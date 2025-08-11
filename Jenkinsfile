@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Code Checkout') {
             steps {
-                git branch: 'master',
+                git branch: 'main',
                     url: 'https://github.com/Monica-balajothi/Devops_IGP.git'
             }
         }
@@ -40,6 +40,7 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    cp ${WORKSPACE}/target/ABCtechnologies-1.0.war ${WORKSPACE}/abc.war
                     docker build --memory=256m -t monicabalajothi/retail-app:${BUILD_NUMBER} -t monicabalajothi/retail-app:latest .
                     '''
                 }
