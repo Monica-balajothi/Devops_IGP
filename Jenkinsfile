@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-id')  // Your Jenkins Docker Hub credentials ID
-        DOCKER_IMAGE = 'monicabalajothi/retail-app:latest'    // Your Docker Hub image name
+        DOCKER_IMAGE = 'monicabalajothi/retail-app:latest' // Your Docker Hub image name
     }
 
     stages {
@@ -33,15 +32,15 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
+                sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
 
         stage('Docker Login & Push') {
             steps {
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-id') {
-                        sh "docker push $DOCKER_IMAGE"
+                    withDockerRegistry([credentialsId: 'dockerhub-id', url: 'https://registry.hub.docker.com']) {
+                        sh "docker push ${DOCKER_IMAGE}"
                     }
                 }
             }
