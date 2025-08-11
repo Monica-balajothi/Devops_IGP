@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         MAVEN_OPTS = '-Xmx256m' // Limit Maven memory usage
-        DOCKER_BUILDKIT = '1'  // Use Docker BuildKit for faster builds
+        DOCKER_BUILDKIT = '0'  // Use Docker BuildKit for faster builds
     }
 
     stages {
