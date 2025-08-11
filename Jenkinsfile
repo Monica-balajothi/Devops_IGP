@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Code Checkout') {
             steps {
-                git branch: 'main',
+                git branch: 'master',
                     url: 'https://github.com/Monica-balajothi/Devops_IGP.git'
             }
         }
